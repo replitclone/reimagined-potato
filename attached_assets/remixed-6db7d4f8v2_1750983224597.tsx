@@ -20,7 +20,7 @@ const firebaseConfig = {
 };
 
 // NEW: Add your Google AI API Key here
-const GEMINI_API_KEY = 'AIzaSyAMe4QTU96P2tRm1Jy9D0Mj0h3bsH-6000'; // <-- ⚠️ PASTE YOUR KEY HERE
+const GEMINI_API_KEY = ''; // <-- ⚠️ PASTE YOUR KEY HERE
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
