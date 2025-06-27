@@ -4,16 +4,21 @@ import { Message } from '@/types/chat';
 let genAI: GoogleGenerativeAI | null = null;
 let model: any = null;
 
-export const initializeGemini = (): boolean => {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  
-  if (!apiKey || apiKey === 'YOUR_GOOGLE_AI_API_KEY') {
-    console.warn('Gemini API key not configured. AI features will be disabled.');
-    return false;
-  }
-
+export const initializeGemini = async (): Promise<boolean> => {
   try {
-    genAI = new GoogleGenerativeAI(apiKey);
+    // Fetch API key from server
+    const response = await fetch('/api/config');
+    const config = await response.json();
+    
+    console.log('Config received:', config);
+    
+    if (!config.geminiApiKey) {
+      console.warn('Gemini API key not configured. AI features will be disabled.');
+      console.log('Available config keys:', Object.keys(config));
+      return false;
+    }
+
+    genAI = new GoogleGenerativeAI(config.geminiApiKey);
     model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     console.log('Gemini AI initialized successfully');
     return true;

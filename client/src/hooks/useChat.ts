@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { Message, OnlineUser } from '@/types/chat';
 import { 
   getFirebaseDatabase, 
@@ -21,12 +21,17 @@ export const useChat = (userId: string, username: string) => {
   const messagesListener = useRef<Unsubscribe | null>(null);
   const usersListener = useRef<Unsubscribe | null>(null);
   const geminiInitialized = useRef(false);
+  const [geminiReady, setGeminiReady] = useState(false);
 
   // Initialize Gemini on first use
-  if (!geminiInitialized.current) {
-    initializeGemini();
-    geminiInitialized.current = true;
-  }
+  useEffect(() => {
+    if (!geminiInitialized.current) {
+      initializeGemini().then((success) => {
+        setGeminiReady(success);
+        geminiInitialized.current = true;
+      });
+    }
+  }, []);
 
   const setupListeners = useCallback(() => {
     try {
@@ -102,7 +107,7 @@ export const useChat = (userId: string, username: string) => {
       await push(messagesRef, messageData);
 
       // Check if AI should respond
-      if (isGeminiAvailable() && shouldAiRespond(text)) {
+      if (geminiReady && isGeminiAvailable() && shouldAiRespond(text)) {
         setTimeout(() => {
           generateAiResponseAsync(text, username);
         }, 1000 + Math.random() * 1000);

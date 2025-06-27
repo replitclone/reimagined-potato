@@ -2,10 +2,11 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // API route to get Gemini API key (for server-side usage if needed)
+  // API route to get configuration and API keys
   app.get('/api/config', (req, res) => {
     res.json({
-      geminiAvailable: !!(process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY),
+      geminiApiKey: process.env.GEMINI_API_KEY,
+      geminiAvailable: !!process.env.GEMINI_API_KEY,
       firebaseConfigured: !!(process.env.FIREBASE_API_KEY || process.env.VITE_FIREBASE_API_KEY)
     });
   });

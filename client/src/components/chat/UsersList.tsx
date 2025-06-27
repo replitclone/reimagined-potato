@@ -31,7 +31,7 @@ export default function UsersList({ users }: UsersListProps) {
       
       <div className="space-y-2">
         {/* AI Assistant - Always shown */}
-        <div className="flex items-center p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+        <div key="ai-assistant" className="flex items-center p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
           <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center text-white text-sm">
             <Bot className="w-4 h-4" />
           </div>
