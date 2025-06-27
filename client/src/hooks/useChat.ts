@@ -107,7 +107,15 @@ export const useChat = (userId: string, username: string) => {
       await push(messagesRef, messageData);
 
       // Check if AI should respond
+      console.log('Checking AI response conditions:', {
+        geminiReady,
+        isGeminiAvailable: isGeminiAvailable(),
+        shouldAiRespond: shouldAiRespond(text),
+        message: text
+      });
+      
       if (geminiReady && isGeminiAvailable() && shouldAiRespond(text)) {
+        console.log('AI will respond to message:', text);
         setTimeout(() => {
           generateAiResponseAsync(text, username);
         }, 1000 + Math.random() * 1000);
@@ -119,13 +127,21 @@ export const useChat = (userId: string, username: string) => {
   }, [username, userId]);
 
   const generateAiResponseAsync = useCallback(async (triggerMessage: string, triggerUser: string) => {
-    if (!isGeminiAvailable()) return;
+    console.log('generateAiResponseAsync called with:', { triggerMessage, triggerUser });
     
+    if (!isGeminiAvailable()) {
+      console.log('Gemini not available, skipping AI response');
+      return;
+    }
+    
+    console.log('Starting AI response generation...');
     setIsAiThinking(true);
     
     try {
       const onlineUsersList = Object.values(onlineUsers).map(user => user.username);
+      console.log('Calling generateAiResponse with:', { triggerMessage, triggerUser, onlineUsersList, messagesCount: messages.length });
       const aiText = await generateAiResponse(triggerMessage, triggerUser, messages, onlineUsersList);
+      console.log('AI response generated:', aiText);
       
       const database = getFirebaseDatabase();
       const aiMessageData: Omit<Message, 'id'> = {
