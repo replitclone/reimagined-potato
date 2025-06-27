@@ -26,7 +26,9 @@ export const useChat = (userId: string, username: string) => {
   // Initialize Gemini on first use
   useEffect(() => {
     if (!geminiInitialized.current) {
+      console.log('Initializing Gemini...');
       initializeGemini().then((success) => {
+        console.log('Gemini initialization result:', success);
         setGeminiReady(success);
         geminiInitialized.current = true;
       });
@@ -106,20 +108,22 @@ export const useChat = (userId: string, username: string) => {
       const messagesRef = ref(database, 'messages');
       await push(messagesRef, messageData);
 
-      // Check if AI should respond
-      console.log('Checking AI response conditions:', {
-        geminiReady,
-        isGeminiAvailable: isGeminiAvailable(),
-        shouldAiRespond: shouldAiRespond(text),
-        message: text
-      });
-      
-      if (geminiReady && isGeminiAvailable() && shouldAiRespond(text)) {
-        console.log('AI will respond to message:', text);
-        setTimeout(() => {
-          generateAiResponseAsync(text, username);
-        }, 1000 + Math.random() * 1000);
-      }
+      // Check if AI should respond (wait a bit for Gemini to initialize)
+      setTimeout(() => {
+        console.log('Checking AI response conditions:', {
+          geminiReady,
+          isGeminiAvailable: isGeminiAvailable(),
+          shouldAiRespond: shouldAiRespond(text),
+          message: text
+        });
+        
+        if (isGeminiAvailable() && shouldAiRespond(text)) {
+          console.log('AI will respond to message:', text);
+          setTimeout(() => {
+            generateAiResponseAsync(text, username);
+          }, 1000 + Math.random() * 1000);
+        }
+      }, 500);
     } catch (error) {
       console.error('Error sending message:', error);
       throw error;
@@ -138,9 +142,10 @@ export const useChat = (userId: string, username: string) => {
     setIsAiThinking(true);
     
     try {
-      const onlineUsersList = Object.values(onlineUsers).map(user => user.username);
-      console.log('Calling generateAiResponse with:', { triggerMessage, triggerUser, onlineUsersList, messagesCount: messages.length });
-      const aiText = await generateAiResponse(triggerMessage, triggerUser, messages, onlineUsersList);
+      const currentOnlineUsers = Object.values(onlineUsers).map(user => user.username);
+      const currentMessages = [...messages];
+      console.log('Calling generateAiResponse with:', { triggerMessage, triggerUser, currentOnlineUsers, messagesCount: currentMessages.length });
+      const aiText = await generateAiResponse(triggerMessage, triggerUser, currentMessages, currentOnlineUsers);
       console.log('AI response generated:', aiText);
       
       const database = getFirebaseDatabase();
@@ -175,7 +180,7 @@ export const useChat = (userId: string, username: string) => {
     } finally {
       setIsAiThinking(false);
     }
-  }, [messages, onlineUsers]);
+  }, [messages, onlineUsers, geminiReady]);
 
   const leaveChat = useCallback(async () => {
     try {
